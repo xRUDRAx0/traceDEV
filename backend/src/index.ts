@@ -1,12 +1,13 @@
+import './env';
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import http from 'http';
 import { Server } from 'socket.io';
 import apiRoutes from './routes/api';
 import { DbService } from './services/db.service';
-
-dotenv.config();
+import { PatternService } from './services/pattern.service';
+import { ShowcaseService } from './services/showcase.service';
 
 const app = express();
 const server = http.createServer(app);
@@ -23,6 +24,11 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3001;
 
 const dbService = new DbService();
+const patternService = new PatternService(dbService);
+const showcaseService = new ShowcaseService(dbService);
+
+// Initialize TRACE Demo Workspace
+showcaseService.initializeShowcase();
 
 app.set('io', io); // Inject for routes to use
 
@@ -34,7 +40,10 @@ app.use(cors({
 app.use(express.json());
 
 // Main API routes
+import showcaseRoutes from './routes/showcase';
+
 app.use('/api', apiRoutes);
+app.use('/api/showcase', showcaseRoutes);
 
 // Health check — required for Railway/Render/Cloud deployment
 app.get('/health', (req, res) => {
@@ -62,9 +71,20 @@ io.on('connection', (socket) => {
     const activeWorkflowId = dbService.getActiveWorkflowId();
     if (activeWorkflowId) {
       event.workflowId = activeWorkflowId;
+      event.sessionId = activeWorkflowId; // Ensure sessionId is properly set
       await dbService.saveEvents([event]);
       // Broadcast to frontend
       io.emit('new_event', event);
+
+      // Feature 1: Real-time Live pattern detection broadcast
+      try {
+        const pattern = await patternService.detectPattern(activeWorkflowId);
+        if (pattern && pattern.repeatedActions.length > 0) {
+          io.emit('live_pattern', pattern);
+        }
+      } catch (err) {
+        console.error('Failed to run live pattern detection', err);
+      }
     }
   });
 

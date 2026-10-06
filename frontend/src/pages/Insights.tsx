@@ -37,74 +37,74 @@ export default function Insights() {
       
       <div className="flex items-center gap-3 mb-6">
         <TraceLogo className="text-3xl text-text-primary" />
-        <h1 className="text-3xl font-black text-text-primary tracking-tight">Intelligence</h1>
+        <h1 className="text-3xl font-bold text-text-primary tracking-tight">Intelligence</h1>
       </div>
-      <p className="text-sm text-text-secondary mt-[-1rem] mb-8">Evidence-based analysis of your workflow quality and productivity.</p>
+      <p className="text-sm text-text-secondary mt-[-1rem] mb-8 font-medium">Evidence-based analysis of your workflow quality and productivity.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         
         {/* Work Efficiency */}
-        <div className="solid-card p-6 flex flex-col items-center justify-center text-center">
-          <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span className="text-success"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg></span>
+        <div className="solid-card p-8 flex flex-col items-center justify-center text-center">
+          <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-6 flex items-center gap-2">
+            <span className="text-[#059669]"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg></span>
             Work Efficiency
           </div>
-          <div className="w-24 h-24 rounded-full border-4 border-success flex flex-col items-center justify-center text-success mb-2">
-            <span className="text-3xl font-black">{efficiency}</span>
-            <span className="text-[10px] font-bold opacity-70">/100</span>
+          <div className="w-28 h-28 rounded-full border-[6px] border-[#34D399] flex flex-col items-center justify-center text-[#059669] mb-4 bg-[#D1FAE5]">
+            <span className="text-4xl font-bold">{efficiency}</span>
+            <span className="text-[10px] font-semibold opacity-70">/100</span>
           </div>
-          <p className="text-[11px] text-text-secondary font-medium">Optimal workflow detected</p>
+          <p className="text-xs text-text-secondary font-medium">Optimal workflow detected</p>
         </div>
 
         {/* Context Switching */}
-        <div className="solid-card p-6 flex flex-col items-center justify-center text-center">
-          <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-4 flex items-center gap-2">
-            <Activity className="w-3.5 h-3.5 text-text-primary" />
+        <div className="solid-card p-8 flex flex-col items-center justify-center text-center">
+          <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-6 flex items-center gap-2">
+            <Activity className="w-3.5 h-3.5 text-[#0F172A]" />
             Context Switching
           </div>
-          <div className="w-24 h-24 rounded-full border-4 border-border flex flex-col items-center justify-center text-text-primary mb-2">
-            <span className="text-3xl font-black">{contextSwitching}</span>
+          <div className="w-28 h-28 rounded-full border-[6px] border-[#E2E8F0] flex flex-col items-center justify-center text-text-primary mb-4 bg-[#F8FAFC]">
+            <span className="text-4xl font-bold">{contextSwitching}</span>
           </div>
-          <p className="text-[11px] text-text-secondary font-medium">Total application transitions</p>
+          <p className="text-xs text-text-secondary font-medium">Total application transitions</p>
         </div>
 
         {/* Workflow Friction */}
-        <div className="solid-card p-6 flex flex-col items-center justify-center text-center">
-          <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+        <div className="solid-card p-8 flex flex-col items-center justify-center text-center">
+          <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-6 flex items-center gap-2">
+            <AlertTriangle className="w-3.5 h-3.5 text-[#D97706]" />
             Workflow Friction
           </div>
-          <div className="w-24 h-24 rounded-full border-4 border-border flex flex-col items-center justify-center text-text-primary mb-2">
-            <span className="text-3xl font-black">{frictionScore}</span>
+          <div className="w-28 h-28 rounded-full border-[6px] border-[#E2E8F0] flex flex-col items-center justify-center text-text-primary mb-4 bg-[#F8FAFC]">
+            <span className="text-4xl font-bold">{frictionScore}</span>
           </div>
-          <p className="text-[11px] text-text-secondary font-medium">Average friction score</p>
+          <p className="text-xs text-text-secondary font-medium">Average friction score</p>
         </div>
 
         {/* Automation Potential */}
-        <div className="solid-card p-6 flex flex-col items-center justify-center text-center">
-          <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-4 flex items-center gap-2">
-            <Zap className="w-3.5 h-3.5 text-success" />
+        <div className="solid-card p-8 flex flex-col items-center justify-center text-center">
+          <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-6 flex items-center gap-2">
+            <Zap className="w-3.5 h-3.5 text-[#0284C7]" />
             Automation Potential
           </div>
-          <div className="w-24 h-24 rounded-full border-4 border-border flex flex-col items-center justify-center text-text-primary mb-2">
-            <span className="text-3xl font-black">{automationPotential}%</span>
+          <div className="w-28 h-28 rounded-full border-[6px] border-[#E2E8F0] flex flex-col items-center justify-center text-text-primary mb-4 bg-[#F8FAFC]">
+            <span className="text-4xl font-bold">{automationPotential}%</span>
           </div>
-          <p className="text-[11px] text-text-secondary font-medium">Estimated opportunity</p>
+          <p className="text-xs text-text-secondary font-medium">Estimated opportunity</p>
         </div>
 
       </div>
 
       <div className="mt-12">
-        <h2 className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-6 flex items-center gap-2">
-          <span className="text-warning">👍</span> AI Recommendations
+        <h2 className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-6 flex items-center gap-2">
+          <span className="text-[#F59E0B]">👍</span> AI Recommendations
         </h2>
         
-        <div className="solid-card p-8 flex flex-col items-center justify-center text-center">
-          <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center mb-4">
-            <CheckCircle2 className="w-6 h-6 text-success" />
+        <div className="solid-card p-10 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#F8FAFC] to-white">
+          <div className="w-14 h-14 rounded-2xl bg-[#D1FAE5] flex items-center justify-center mb-5 border border-[#A7F3D0]">
+            <CheckCircle2 className="w-7 h-7 text-[#059669]" />
           </div>
-          <h3 className="text-lg font-bold text-text-primary mb-2">Your workflows are highly efficient</h3>
-          <p className="text-xs text-text-secondary max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-text-primary mb-3">Your workflows are highly efficient</h3>
+          <p className="text-sm text-text-secondary max-w-md mx-auto font-medium">
             We haven't detected any major friction points or automation opportunities yet. Keep working, and TRACE will keep analyzing!
           </p>
         </div>

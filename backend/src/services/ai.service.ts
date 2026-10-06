@@ -236,7 +236,9 @@ export class AiService {
                  action: e.action === 'click' ? 'CLICK' : e.action === 'type' ? 'TYPE' : e.action === 'key_press' ? 'KEY_PRESS' : 'OPEN_BROWSER',
                  target: e.target || e.metadata?.elementName || undefined,
                  value: e.metadata?.typedText || e.metadata?.elementValue || undefined,
-                 key: e.metadata?.key || undefined
+                 key: e.metadata?.key || undefined,
+                 x: (e as any).x || e.metadata?.x,
+                 y: (e as any).y || e.metadata?.y
                }))
              ]
            : [{ action: 'OPEN_BROWSER', url: 'https://www.google.com' }],

@@ -16,7 +16,7 @@ export default function Settings() {
     <div className="space-y-8 animate-in fade-in duration-500 pb-12 pt-4 max-w-[1400px] mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black text-text-primary tracking-tight mb-2">Settings</h1>
+          <h1 className="text-3xl font-bold text-text-primary tracking-tight mb-2">Settings</h1>
           <p className="text-sm text-text-secondary">Manage observation preferences, privacy, automation safety, and appearance.</p>
         </div>
       </div>
@@ -27,7 +27,7 @@ export default function Settings() {
             <button 
               key={i} 
               onClick={() => setActiveTab(tab)}
-              className={`w-full text-left px-5 py-3 rounded text-[11px] font-bold uppercase tracking-widest transition-colors ${activeTab === tab ? 'bg-text-primary text-background' : 'text-text-secondary hover:bg-surface-secondary hover:text-text-primary'}`}
+              className={`w-full text-left px-5 py-3 rounded-lg text-xs font-semibold tracking-wide transition-colors ${activeTab === tab ? 'bg-[#0F172A] text-white' : 'text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A]'}`}
             >
               {tab}
             </button>
@@ -40,7 +40,9 @@ export default function Settings() {
           {activeTab === 'Appearance' && (
             <section className="solid-card p-8">
               <div className="flex items-center gap-3 mb-8">
-                <Monitor className="w-5 h-5 text-text-primary" />
+                <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] border border-[#F1F5F9] flex items-center justify-center">
+                  <Monitor className="w-5 h-5 text-[#0F172A]" />
+                </div>
                 <h2 className="text-xl font-bold text-text-primary">Appearance Settings</h2>
               </div>
               

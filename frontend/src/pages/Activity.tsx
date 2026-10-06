@@ -120,6 +120,27 @@ export default function Activity() {
     );
   };
 
+  const [duration, setDuration] = useState(0);
+
+  useEffect(() => {
+    let interval: any;
+    if (isActive) {
+      interval = setInterval(() => {
+        setDuration(prev => prev + 1);
+      }, 1000);
+    } else {
+      setDuration(0);
+    }
+    return () => clearInterval(interval);
+  }, [isActive]);
+
+  const formatDuration = (secs: number) => {
+    const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+    const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  };
+
   // Prepare session list for rendering (mix live + history)
   let displaySessions = [...sessions];
   if (currentSessionId && !displaySessions.find(s => s.id === currentSessionId)) {
@@ -131,29 +152,97 @@ export default function Activity() {
     });
   }
   
-  // Sort by start time descending
   displaySessions.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12 pt-4 max-w-4xl mx-auto">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-12 pt-4 max-w-5xl mx-auto">
       
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black text-text-primary tracking-tight mb-2">Activity</h1>
-          <p className="text-sm text-text-secondary">Review your recorded observation sessions.</p>
+      {/* Observation State Card (Matches Reference) */}
+      {isActive ? (
+        <div className="solid-card overflow-hidden p-8 relative">
+           <div className="absolute right-0 top-0 w-64 h-64 bg-[#E0F2FE]/40 rounded-full blur-[60px] -z-10 pointer-events-none translate-x-1/2 -translate-y-1/4"></div>
+           
+           <div className="flex items-center gap-4 mb-10">
+             <div className="w-10 h-10 rounded-full bg-[#D1FAE5] flex items-center justify-center border border-[#A7F3D0]">
+               <div className="w-3 h-3 rounded-full bg-[#10B981] ring-4 ring-[#10B981]/20"></div>
+             </div>
+             <div>
+               <h2 className="text-xl font-bold text-text-primary">Observation Active</h2>
+               <p className="text-sm text-text-secondary">TRACE is running in the background.</p>
+             </div>
+           </div>
+
+           <div className="grid grid-cols-3 gap-12 mb-10">
+              <div>
+                <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">SESSION DURATION</p>
+                <p className="text-4xl font-bold text-text-primary font-mono tracking-tight">{formatDuration(duration)}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">ACTIONS</p>
+                <p className="text-4xl font-bold text-text-primary">{liveEvents.length}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">APPS</p>
+                <p className="text-4xl font-bold text-text-primary">{new Set(liveEvents.map(e => e.app || e.application)).size}</p>
+              </div>
+           </div>
+
+           <div className="border-t border-[#F1F5F9] pt-6 mb-8">
+              <div className="flex justify-between items-center mb-6">
+                 <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">LIVE ACTIVITY FEED</h3>
+                 <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></div>
+                    <span className="text-xs font-semibold text-[#10B981]">Recording</span>
+                 </div>
+              </div>
+              
+              <div className="bg-[#F8FAFC] rounded-2xl border border-[#F1F5F9] p-10 flex flex-col items-center justify-center min-h-[200px]">
+                 {liveEvents.length === 0 ? (
+                    <>
+                      <ActivityIcon className="w-8 h-8 text-[#94A3B8] mb-3" />
+                      <p className="text-sm text-[#64748B] font-medium">Waiting for activity...</p>
+                    </>
+                 ) : (
+                    <div className="w-full space-y-3">
+                      {liveEvents.slice(0, 3).map((act, i) => {
+                        const appName = act.app || act.application || 'Unknown';
+                        const { icon: Icon, color } = getAppIcon(appName);
+                        return (
+                          <div key={i} className="flex gap-4 items-center bg-white p-3 rounded-xl border border-[#F1F5F9] shadow-sm">
+                            <Icon className={`w-5 h-5 ${color}`} />
+                            <div>
+                              <p className="text-sm font-semibold text-text-primary capitalize">{getSemanticAction(act)}</p>
+                              <p className="text-[11px] text-text-secondary">{appName}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                 )}
+              </div>
+           </div>
+
+           <button 
+             onClick={toggleObservation}
+             className="px-8 py-3.5 bg-[#0F172A] hover:bg-[#1E293B] text-white text-sm font-semibold rounded-xl shadow-[0_4px_14px_0_rgba(15,23,42,0.2)] transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+           >
+             <StopCircle className="w-4 h-4" /> Finish Observation
+           </button>
         </div>
-        <button 
-          onClick={toggleObservation}
-          className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-md shadow-sm transition-colors ${
-            isActive 
-              ? 'bg-surface hover:bg-surface-secondary text-error border border-border'
-              : 'bg-accent hover:bg-accent-hover text-background'
-          }`}
-        >
-          {isActive ? <><StopCircle className="w-4 h-4" /> Stop Observation</> : <><PlayCircle className="w-4 h-4" /> Start Observation</>}
-        </button>
-      </div>
+      ) : (
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary tracking-tight mb-2">Activity</h1>
+            <p className="text-sm text-text-secondary">Review your recorded observation sessions.</p>
+          </div>
+          <button 
+            onClick={toggleObservation}
+            className="flex items-center gap-2 px-6 py-3 bg-[#0F172A] hover:bg-[#1E293B] text-white text-sm font-semibold rounded-xl shadow-[0_4px_14px_0_rgba(15,23,42,0.2)] transition-all hover:-translate-y-0.5"
+          >
+            <PlayCircle className="w-4 h-4" /> Start Observation
+          </button>
+        </div>
+      )}
 
       <div className="solid-card overflow-hidden flex flex-col">
         <div className="p-4 border-b border-border bg-surface-secondary/50">

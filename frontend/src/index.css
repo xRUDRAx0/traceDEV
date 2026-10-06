@@ -16,51 +16,76 @@
   --color-warning: var(--warning);
   --color-error: var(--error);
   --color-info: var(--info);
+  
+  --color-nav-active-bg: var(--nav-active-bg);
+  --color-nav-active-text: var(--nav-active-text);
+  
+  --color-pastel-blue-bg: #F0F9FF;
+  --color-pastel-blue-text: #0284C7;
+  --color-pastel-green-bg: #F0FDF4;
+  --color-pastel-green-text: #16A34A;
+  --color-pastel-purple-bg: #FAF5FF;
+  --color-pastel-purple-text: #9333EA;
+  --color-pastel-orange-bg: #FFF7ED;
+  --color-pastel-orange-text: #EA580C;
+  --color-pastel-pink-bg: #FFF1F2;
+  --color-pastel-pink-text: #E11D48;
 }
 
 @layer base {
   :root {
-    /* Light Mode - TRACE Premium */
-    --background: #FDFCF9; /* Brighter warm off-white */
-    --surface: #FFFFFF; /* Pure white */
-    --surface-secondary: #F6F5F0; /* Slightly darker cream for secondary surfaces */
-    --border: #E8E6E1; /* Subtle border */
+    /* Reference Theme - Clean, Minimal, Soft SaaS */
+    --background: #F8FAFC; /* Light slate background */
+    --surface: #FFFFFF; /* Pure white cards */
+    --surface-secondary: #F1F5F9; /* Very faint gray for hovers/secondary */
+    --border: #F1F5F9; /* Extremely subtle borders */
     
-    --text-primary: #1A1A1A; /* Near black */
-    --text-secondary: #5C5C5C; /* Medium gray */
-    --text-muted: #999999; /* Light gray */
+    --text-primary: #0F172A; /* Dark navy for strong contrast */
+    --text-secondary: #64748B; /* Soft slate gray */
+    --text-muted: #94A3B8; /* Lighter slate gray */
     
-    --accent: #4F39F6; /* Controlled TRACE purple */
-    --accent-hover: #3E2CD4;
-    --success: #10B981; /* Calmer Emerald Green */
-    --warning: #F59E0B; /* Amber/Yellow for charts and warnings */
-    --error: #EF4444; /* Red */
-    --info: #3B82F6; /* Blue */
+    --accent: #0F172A; /* Primary actions are dark navy in reference */
+    --accent-hover: #1E293B;
     
-    /* Subtle warm ambient wash */
-    --bg-wash: radial-gradient(circle at 50% 0%, rgba(253, 237, 190, 0.25) 0%, rgba(253, 237, 190, 0) 60%), var(--background);
+    --nav-active-bg: #FFF1F2; /* Soft peach/pink pill */
+    --nav-active-text: #0F172A;
+    
+    --success: #10B981; 
+    --warning: #F59E0B; 
+    --error: #EF4444; 
+    --info: #3B82F6; 
+
+    /* Subtle pastel ambient wash (blue/purple/peach) */
+    --bg-wash: radial-gradient(circle at 100% 0%, rgba(224, 242, 254, 0.4) 0%, transparent 40%),
+               radial-gradient(circle at 0% 100%, rgba(250, 245, 255, 0.4) 0%, transparent 40%),
+               radial-gradient(circle at 50% 50%, rgba(255, 241, 242, 0.2) 0%, transparent 60%),
+               var(--background);
   }
 
   .dark {
-    /* Dark Mode - TRACE Premium */
-    --background: #0F1012; /* Very dark charcoal */
-    --surface: #16181A; /* Slightly lighter charcoal */
-    --surface-secondary: #1F2124; /* Secondary surface */
-    --border: #2A2D31; /* Subtle dark border */
+    /* Forcing light theme tokens even in dark mode for this specific visual compliance, 
+       or matching a "dark" version of the soft theme. We will map it closely. */
+    --background: #0F172A;
+    --surface: #1E293B;
+    --surface-secondary: #334155;
+    --border: #334155;
     
-    --text-primary: #F0F0F0; /* Off-white */
-    --text-secondary: #A0A0A0; /* Medium gray */
-    --text-muted: #666666; /* Dark gray */
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
     
-    --accent: #6C5CE7; /* TRACE purple */
-    --accent-hover: #897CFF;
+    --accent: #FFFFFF;
+    --accent-hover: #F1F5F9;
+    
+    --nav-active-bg: #334155;
+    --nav-active-text: #F8FAFC;
+    
     --success: #10B981;
     --warning: #F59E0B;
     --error: #EF4444;
     --info: #3B82F6;
 
-    /* Subtle warm ambient wash for dark mode */
-    --bg-wash: radial-gradient(circle at 50% 0%, rgba(253, 237, 190, 0.03) 0%, rgba(253, 237, 190, 0) 60%), var(--background);
+    --bg-wash: radial-gradient(circle at 100% 0%, rgba(2, 132, 199, 0.1) 0%, transparent 40%), var(--background);
   }
 
   html {
@@ -70,47 +95,23 @@
   body {
     background: var(--bg-wash);
     background-color: var(--background);
+    background-attachment: fixed;
     color: var(--text-primary);
     transition: background-color 200ms ease, color 200ms ease;
     @apply antialiased font-sans;
     min-height: 100vh;
   }
   
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 4px;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
-  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-  /* Global hover and click animations */
-  button, 
-  a,
-  .nav-item,
-  .hover-card,
-  .solid-card.group,
-  tr.group {
+  button, a, .nav-item, .hover-card, .solid-card.group, tr.group {
     transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
   }
 
-  button:active:not(:disabled),
-  a:active,
-  .nav-item:active,
-  .hover-card:active,
-  .solid-card.group:active,
-  tr.group:active {
+  button:active:not(:disabled), a:active, .nav-item:active, .hover-card:active, .solid-card.group:active, tr.group:active {
     transform: scale(0.98);
   }
 }
@@ -119,31 +120,44 @@
   .solid-card {
     background-color: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
-    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
-    will-change: transform, box-shadow;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    transition: transform 300ms ease, box-shadow 300ms ease, border-color 300ms ease;
   }
   
   .solid-card:hover {
-    box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
-    border-color: var(--border);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    border-color: #E2E8F0;
     transform: translateY(-2px);
   }
   
   .glass-card {
-    background-color: var(--surface);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
   }
 
   .nav-blur-bar {
-    background: color-mix(in srgb, var(--surface) 80%, transparent);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
   }
+
+  .badge-pastel-blue { @apply bg-pastel-blue-bg text-pastel-blue-text font-semibold rounded-full px-2.5 py-0.5 text-xs; }
+  .badge-pastel-green { @apply bg-pastel-green-bg text-pastel-green-text font-semibold rounded-full px-2.5 py-0.5 text-xs; }
+  .badge-pastel-purple { @apply bg-pastel-purple-bg text-pastel-purple-text font-semibold rounded-full px-2.5 py-0.5 text-xs; }
+  .badge-pastel-orange { @apply bg-pastel-orange-bg text-pastel-orange-text font-semibold rounded-full px-2.5 py-0.5 text-xs; }
+  .badge-pastel-pink { @apply bg-pastel-pink-bg text-pastel-pink-text font-semibold rounded-full px-2.5 py-0.5 text-xs; }
+
+  .icon-container-blue { @apply bg-pastel-blue-bg text-pastel-blue-text p-2 rounded-xl flex items-center justify-center; }
+  .icon-container-green { @apply bg-pastel-green-bg text-pastel-green-text p-2 rounded-xl flex items-center justify-center; }
+  .icon-container-purple { @apply bg-pastel-purple-bg text-pastel-purple-text p-2 rounded-xl flex items-center justify-center; }
+  .icon-container-orange { @apply bg-pastel-orange-bg text-pastel-orange-text p-2 rounded-xl flex items-center justify-center; }
+  .icon-container-pink { @apply bg-pastel-pink-bg text-pastel-pink-text p-2 rounded-xl flex items-center justify-center; }
 }
 
 @layer utilities {
@@ -154,7 +168,6 @@
   @keyframes shimmer {
     100% { transform: translateX(100%); }
   }
-  
   .animate-fade-in-subtle {
     animation: fadeInUp 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }

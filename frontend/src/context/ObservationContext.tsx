@@ -9,6 +9,7 @@ interface ObservationContextType {
   liveEvents: any[];
   socket: Socket | null;
   currentSessionId: string | null;
+  livePattern: any;
 }
 
 const ObservationContext = createContext<ObservationContextType | undefined>(undefined);
@@ -19,6 +20,7 @@ export function ObservationProvider({ children }: { children: React.ReactNode })
   const [liveEvents, setLiveEvents] = useState<any[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [livePattern, setLivePattern] = useState<any>(null);
 
   useEffect(() => {
     // Initial fetch of settings
@@ -43,17 +45,21 @@ export function ObservationProvider({ children }: { children: React.ReactNode })
       setCurrentSessionId(data.sessionId || null);
       if (data.active && data.sessionId !== currentSessionId) {
         setLiveEvents([]); // Clear live events on new session start
+        setLivePattern(null);
       }
     });
 
     newSocket.on('new_event', (event) => {
       setLiveEvents(prev => {
-        // Double check session ID if available, though backend should only broadcast active ones
         if (event.sessionId && event.sessionId !== currentSessionId) {
-          // If we have a mismatch (rare race condition), we might ignore, but for now we accept all from backend
+          // rare mismatch ignored
         }
         return [event, ...prev];
       });
+    });
+
+    newSocket.on('live_pattern', (pattern) => {
+      setLivePattern(pattern);
     });
 
     return () => {
@@ -78,7 +84,7 @@ export function ObservationProvider({ children }: { children: React.ReactNode })
   };
 
   return (
-    <ObservationContext.Provider value={{ isActive, toggleObservation, isLoading, liveEvents, socket, currentSessionId }}>
+    <ObservationContext.Provider value={{ isActive, toggleObservation, isLoading, liveEvents, socket, currentSessionId, livePattern }}>
       {children}
     </ObservationContext.Provider>
   );

@@ -1,0 +1,19 @@
+Customer: Acme Corp
+Issue: The dashboard is showing a 500 internal server error when I try to export my weekly PDF report. Please help ASAP, this is blocking our Monday meeting.
+Priority: Undefined
+Category: Undefined
+Assigned: Undefined
+[TRACE AI UPDATED]:
+Category: Bug
+Priority: High
+Assigned: Engineering
+
+[TRACE AI UPDATED]:
+Category: Bug
+Priority: High
+Assigned: Engineering
+
+[TRACE AI UPDATED]:
+Category: Bug
+Priority: High
+Assigned: Engineering

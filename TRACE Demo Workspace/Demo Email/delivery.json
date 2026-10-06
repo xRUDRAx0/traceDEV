@@ -1,0 +1,7 @@
+{
+  "to": "boss@acme.corp",
+  "subject": "Demo / Showcase Delivery: Weekly Sales Report",
+  "body": "Weekly Sales Report attached.",
+  "attachment": "Weekly_Sales_Report.xlsx",
+  "sentAt": "2026-09-27T08:02:14.781Z"
+}

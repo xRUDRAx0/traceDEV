@@ -100,11 +100,19 @@ def flush_typing_buffer():
     finally:
         typing_buffer = ""
 
+last_click_time = 0
+
 def on_click(x, y, button, pressed):
     """Mouse click handler."""
-    global is_observing, current_session_id
+    global is_observing, current_session_id, last_click_time
     if not is_observing or not pressed:
         return
+
+    # Debounce to prevent double-clicks from hardware bounce
+    current_time = time.time()
+    if current_time - last_click_time < 0.2:
+        return
+    last_click_time = current_time
 
     # Flush any typing before recording the click
     flush_typing_buffer()

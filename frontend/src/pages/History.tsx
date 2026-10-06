@@ -1,84 +1,147 @@
-import React from 'react';
-import { History as HistoryIcon, Search, Filter } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { History as HistoryIcon, Search, Clock, Zap, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { API_URL } from '../config';
 
 export default function History() {
-  const workflows = [
-    { id: 1, name: 'Data Entry - CRM Update', events: 45, duration: '4m 12s', date: '2 hours ago', status: 'Analyzed' },
-    { id: 2, name: 'Invoice Processing Flow', events: 112, duration: '12m 30s', date: 'Yesterday', status: 'Pending Approval' },
-    { id: 3, name: 'Weekly Report Generation', events: 34, duration: '2m 15s', date: 'Aug 20, 2026', status: 'Automated' },
-  ];
+  const [executions, setExecutions] = useState<any[]>([]);
+  const [automations, setAutomations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API_URL}/api/executions`).then(r => r.json()),
+      fetch(`${API_URL}/api/automations`).then(r => r.json())
+    ]).then(([execData, autoData]) => {
+      setExecutions(Array.isArray(execData) ? execData : []);
+      setAutomations(Array.isArray(autoData) ? autoData : []);
+      setLoading(false);
+    }).catch(err => {
+      console.error('Failed to load history', err);
+      setLoading(false);
+    });
+  }, []);
+
+  const getAutomation = (id: string) => automations.find(a => a.id === id);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 pb-12 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Workflow History</h1>
-          <p className="mt-2 text-text-secondary">Review your past recordings and their automation status.</p>
+          <h1 className="text-3xl font-black text-text-primary">TRACE Time Machine</h1>
+          <p className="mt-1 text-text-secondary font-medium">Replay past executions and view optimizations.</p>
+        </div>
+        <div className="w-12 h-12 bg-surface border border-border rounded-xl flex items-center justify-center shadow-sm">
+          <HistoryIcon className="w-6 h-6 text-accent" />
         </div>
       </div>
 
-      <div className="bg-surface rounded-xl shadow-sm border border-border">
-        <div className="p-4 border-b border-border flex items-center gap-4 bg-surface">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-            <input 
-              type="text" 
-              placeholder="Search workflows..." 
-              className="w-full pl-9 pr-4 py-2 bg-surface-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-info focus:border-transparent text-text-primary"
-            />
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg text-sm font-medium text-text-secondary hover:bg-surface-secondary transition-colors">
-            <Filter className="w-4 h-4" />
-            Filter
-          </button>
-        </div>
+      {loading ? (
+        <div className="text-center py-12 text-sm text-text-muted font-bold">Loading temporal logs...</div>
+      ) : executions.length === 0 ? (
+        <div className="text-center py-12 text-sm text-text-muted font-bold">No executions recorded yet.</div>
+      ) : (
+        <div className="space-y-6">
+          {executions.map(run => {
+            const automation = getAutomation(run.automationId);
+            const name = automation?.name || run.automationId;
+            const duration = run.completedAt ? Math.round((run.completedAt - run.startedAt) / 1000) : 0;
+            const manualDuration = automation?.estimatedManualDuration || 0;
+            const saved = Math.max(0, manualDuration - duration);
+            const isExpanded = expandedId === run.runId;
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-surface-secondary border-b border-border">
-                <th className="px-6 py-4 text-sm font-semibold text-text-primary">Workflow Name</th>
-                <th className="px-6 py-4 text-sm font-semibold text-text-primary">Events</th>
-                <th className="px-6 py-4 text-sm font-semibold text-text-primary">Duration</th>
-                <th className="px-6 py-4 text-sm font-semibold text-text-primary">Recorded On</th>
-                <th className="px-6 py-4 text-sm font-semibold text-text-primary">Status</th>
-                <th className="px-6 py-4 text-sm font-semibold text-text-primary text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {workflows.map((workflow) => (
-                <tr key={workflow.id} className="hover:bg-surface-secondary transition-colors group">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-md bg-info/10 text-info flex items-center justify-center">
-                        <HistoryIcon className="w-4 h-4" />
-                      </div>
-                      <span className="font-medium text-text-primary">{workflow.name}</span>
+            return (
+              <div key={run.runId} className="bg-surface border-2 border-border rounded-xl overflow-hidden shadow-sm transition-all hover:border-accent/40">
+                <div 
+                  className="p-5 flex items-center justify-between cursor-pointer bg-surface-secondary/30"
+                  onClick={() => setExpandedId(isExpanded ? null : run.runId)}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-background border border-border rounded-lg flex items-center justify-center">
+                      {run.status === 'Completed' ? <CheckCircle2 className="w-5 h-5 text-success" /> : <Clock className="w-5 h-5 text-warning" />}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-text-secondary">{workflow.events}</td>
-                  <td className="px-6 py-4 text-sm text-text-secondary">{workflow.duration}</td>
-                  <td className="px-6 py-4 text-sm text-text-secondary">{workflow.date}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      workflow.status === 'Automated' ? 'bg-success/20 text-success' :
-                      workflow.status === 'Pending Approval' ? 'bg-warning/20 text-warning' :
-                      'bg-info/20 text-info'
-                    }`}>
-                      {workflow.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button className="text-sm font-medium text-info hover:text-info/80 opacity-0 group-hover:opacity-100 transition-opacity">
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <div>
+                      <h3 className="font-bold text-text-primary text-sm flex items-center gap-2">
+                        {name}
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-background border border-border">v{automation?.version || 1}</span>
+                      </h3>
+                      <p className="text-xs text-text-secondary mt-1">
+                        {new Date(run.startedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-8">
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold text-text-muted uppercase">Time Saved</p>
+                      <p className="text-sm font-black text-success flex items-center justify-end gap-1">
+                        <Zap className="w-3 h-3" />
+                        {Math.floor(saved / 60)}m {saved % 60}s
+                      </p>
+                    </div>
+                    <div className="text-text-muted">
+                      {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    </div>
+                  </div>
+                </div>
+
+                {isExpanded && (
+                  <div className="p-6 border-t border-border bg-background/50 flex gap-8">
+                    {/* Feature 10: Comparison View */}
+                    <div className="w-1/3 space-y-4">
+                      <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">Optimization Metrics</h4>
+                      <div className="bg-surface border border-border p-4 rounded-lg space-y-4 shadow-sm">
+                        <div>
+                          <p className="text-[10px] text-text-muted font-bold uppercase mb-1">Original Manual Workflow</p>
+                          <p className="text-sm font-bold text-text-secondary line-through opacity-70">
+                            {automation?.steps.length || 0} manual actions<br/>
+                            {Math.floor(manualDuration / 60)}m {manualDuration % 60}s
+                          </p>
+                        </div>
+                        <div className="w-full h-px bg-border"></div>
+                        <div>
+                          <p className="text-[10px] text-accent font-bold uppercase mb-1">TRACE Execution</p>
+                          <p className="text-sm font-black text-text-primary">
+                            {run.stepResults.length} logical steps<br/>
+                            {Math.floor(duration / 60)}m {duration % 60}s
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Feature 10: Timeline View */}
+                    <div className="flex-1">
+                      <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">Execution Timeline</h4>
+                      <div className="relative pl-4 space-y-4 before:absolute before:inset-y-0 before:left-[7px] before:w-px before:bg-border">
+                        {run.stepResults.map((step: any, idx: number) => {
+                          // Mocking timestamps incrementally for the replay effect based on run duration
+                          const stepTime = new Date(run.startedAt + (idx * Math.max(1000, (duration*1000) / run.stepResults.length)));
+                          return (
+                            <div key={idx} className="relative flex items-start gap-4">
+                              <div className={`absolute -left-[4px] top-1.5 w-2 h-2 rounded-full border-2 border-background ${step.status === 'Completed' ? 'bg-success' : step.status === 'Failed' ? 'bg-error' : 'bg-warning'}`}></div>
+                              <div className="text-[10px] font-bold text-text-muted w-16 pt-0.5 shrink-0">
+                                {stepTime.toLocaleTimeString([], { hour12: false })}
+                              </div>
+                              <div className="flex-1 bg-surface border border-border p-3 rounded-lg shadow-sm">
+                                <p className="text-xs font-bold text-text-primary capitalize">{step.originalAction || step.step}</p>
+                                {step.recoveryReason && (
+                                  <div className="mt-2 text-[10px] text-warning bg-warning/10 p-2 rounded border border-warning/20">
+                                    <span className="font-bold">Self-Healed:</span> {step.recoveryReason}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-      </div>
+      )}
     </div>
   );
 }

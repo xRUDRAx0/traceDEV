@@ -96,18 +96,19 @@ export default function Dashboard() {
     };
 
     const getRunTimeSaved = (run: any) => {
-      if (run.status !== 'completed' || !run.endTime) return 0;
-      const runDuration = new Date(run.endTime).getTime() - new Date(run.startTime).getTime();
+      // Note: execution runs use startedAt/completedAt but some legacy runs might use startTime/endTime. Handle both.
+      const runStatus = run.status?.toLowerCase();
+      const endTs = run.completedAt || run.endTime;
+      const startTs = run.startedAt || run.startTime;
+      if (runStatus !== 'completed' || !endTs) return 0;
       
+      const runDurationS = (new Date(endTs).getTime() - new Date(startTs).getTime()) / 1000;
       const auto = automations.find(a => a.id === run.automationId);
-      if (auto && data?.detectedWorkflows) {
-        const wf = data.detectedWorkflows.find((w: any) => w.targetWorkflowId === auto.targetWorkflowId);
-        if (wf && wf.averageDurationSeconds) {
-           const saved = (wf.averageDurationSeconds * 1000) - runDuration;
-           return saved > 0 ? saved : 0;
-        }
-      }
-      return runDuration * 2; 
+      
+      const manual = auto?.estimatedManualDuration || (runDurationS * 5);
+      const savedS = Math.max(0, manual - runDurationS);
+      
+      return savedS * 1000; // ms
     };
 
     const activitiesTodayCount = allEvents.filter(e => isToday(new Date(e.timestamp))).length;
@@ -210,41 +211,33 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-text-primary tracking-tight mb-2">Good morning, Rudra.</h1>
-          <p className="text-sm text-text-secondary flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-text-primary tracking-tight mb-2">Good morning, Rudra. 👋</h1>
+          <p className="text-sm text-text-secondary">
             TRACE learns how you work and helps automate repetitive work. 
-            {isActive ? (
-              <span className="text-success flex items-center gap-1 font-bold text-xs bg-success/10 px-2 py-0.5 rounded border border-success/20">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span> Observation Active
-              </span>
-            ) : (
-              <span className="text-text-muted flex items-center gap-1 font-bold text-xs bg-surface-secondary px-2 py-0.5 rounded border border-border">
-                <span className="w-2 h-2 rounded-full bg-text-muted"></span> Observation Not Started
-              </span>
-            )}
           </p>
+        </div>
+        <div className="hidden md:block bg-[#FFF7ED] text-[#EA580C] text-xs font-semibold px-4 py-2 rounded-2xl border border-[#FED7AA]">
+          Make today more productive!
         </div>
       </div>
 
       {/* Top Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {[
-          { title: 'Activities Today', value: activitiesToday, trend: getTrend(activitiesToday, activitiesYesterday), trendColor: activitiesToday >= activitiesYesterday ? 'text-success' : 'text-error', icon: Activity, onClick: () => navigate('/activity') },
-          { title: 'Workflows Detected', value: workflowsDetected, trend: 'No previous data', trendColor: 'text-text-muted', icon: Layers, onClick: () => navigate('/workflows') },
-          { title: `Time Saved (${timeFilter})`, value: displayFormattedTime, trend: getTrend(timeSavedMs, timeSavedPreviousMs), trendColor: timeSavedMs >= timeSavedPreviousMs ? 'text-success' : 'text-error', icon: Clock, onClick: () => navigate('/insights') },
-          { title: 'Automations Run', value: runsCount, trend: getTrend(runsCount, runsPreviousCount), trendColor: runsCount >= runsPreviousCount ? 'text-success' : 'text-error', icon: Zap, onClick: () => navigate('/executions') },
+          { title: 'ACTIVITIES TODAY', value: activitiesToday, trend: getTrend(activitiesToday, activitiesYesterday), trendLabel: 'vs yesterday', trendColor: activitiesToday >= activitiesYesterday ? 'text-success' : 'text-error', icon: Activity, iconBg: 'bg-[#F0F9FF]', iconColor: 'text-[#0284C7]', onClick: () => navigate('/activity') },
+          { title: 'WORKFLOWS DETECTED', value: workflowsDetected, trend: 'No previous data', trendLabel: '', trendColor: 'text-text-muted', icon: Layers, iconBg: 'bg-[#F0FDF4]', iconColor: 'text-[#16A34A]', onClick: () => navigate('/workflows') },
+          { title: `TIME SAVED (${timeFilter.toUpperCase()})`, value: displayFormattedTime, trend: getTrend(timeSavedMs, timeSavedPreviousMs), trendLabel: 'vs previous period', trendColor: timeSavedMs >= timeSavedPreviousMs ? 'text-success' : 'text-error', icon: Clock, iconBg: 'bg-[#FFF1F2]', iconColor: 'text-[#E11D48]', onClick: () => navigate('/insights') },
+          { title: 'AUTOMATIONS RUN', value: runsCount, trend: getTrend(runsCount, runsPreviousCount), trendLabel: 'vs last week', trendColor: runsCount >= runsPreviousCount ? 'text-success' : 'text-error', icon: Zap, iconBg: 'bg-[#FAF5FF]', iconColor: 'text-[#9333EA]', onClick: () => navigate('/executions') },
         ].map((stat, i) => (
-          <div key={i} onClick={stat.onClick} className="solid-card group p-6 flex flex-col justify-between cursor-pointer">
-            <div className="flex items-center gap-3 mb-4 text-text-primary">
-              <div className="w-8 h-8 rounded bg-surface-secondary border border-border flex items-center justify-center group-hover:border-accent/50 transition-colors">
-                <stat.icon className="w-4 h-4 group-hover:text-accent transition-colors" />
+          <div key={i} onClick={stat.onClick} className="solid-card group p-6 cursor-pointer hover:shadow-md transition-all">
+            <div className="flex items-center gap-3 mb-5">
+              <div className={`w-10 h-10 rounded-xl ${stat.iconBg} flex items-center justify-center`}>
+                <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-text-primary">{stat.title}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-text-muted">{stat.title}</span>
             </div>
-            <div>
-              <h3 className="text-3xl font-black text-text-primary tracking-tight mb-1">{stat.value}</h3>
-              <p className={`text-[10px] font-bold ${stat.trendColor}`}>{stat.trend}</p>
-            </div>
+            <h3 className="text-3xl font-bold text-text-primary tracking-tight mb-1">{stat.value}</h3>
+            <p className={`text-[11px] font-medium ${stat.trendColor}`}>{stat.trend}</p>
           </div>
         ))}
       </div>
@@ -252,45 +245,50 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Column 1: Recent Activity */}
-        <div className="solid-card p-6 flex flex-col h-[400px]">
+        <div className="solid-card p-6 flex flex-col h-[420px]">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-[10px] font-bold text-text-primary uppercase tracking-widest">Recent Activity</h2>
-            <button onClick={() => navigate('/activity')} className="text-[10px] font-bold text-text-secondary hover:text-text-primary">View all</button>
+            <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Recent Activity</h2>
+            <button onClick={() => navigate('/activity')} className="text-xs font-medium text-text-muted hover:text-text-primary transition-colors">View all →</button>
           </div>
           
           <div className="flex-1 overflow-y-auto pr-2">
             <div className="space-y-0 relative">
               {recentActivity.length > 0 ? recentActivity.map((act: any, i: number) => {
-                let icon = FileText;
-                if (act.app === 'Spreadsheet' || act.application === 'Excel') icon = Database;
-                else if (act.app === 'Gmail') icon = Zap;
+                let Icon = FileText;
+                if (act.app === 'Spreadsheet' || act.application === 'Excel') Icon = Database;
+                else if (act.app === 'Gmail') Icon = Zap;
 
                 return (
-                  <div key={i} className="flex gap-4 relative pb-6">
-                    {/* Timeline line */}
+                  <div key={i} className="flex gap-4 relative pb-5">
                     {i !== recentActivity.length - 1 && (
-                      <div className="absolute top-5 left-[23px] bottom-0 w-px bg-border"></div>
+                      <div className="absolute top-5 left-[23px] bottom-0 w-px bg-[#F1F5F9]"></div>
                     )}
                     
-                    <div className="text-[10px] font-bold text-text-secondary mt-1 w-10 text-right shrink-0">
+                    <div className="text-[11px] font-medium text-text-muted mt-1 w-12 text-right shrink-0">
                       {formatTime(act.timestamp)}
+                      <div className="text-[9px] text-text-muted">PM</div>
                     </div>
                     
-                    <div className="w-6 h-6 rounded-full bg-surface border border-border flex items-center justify-center relative z-10 shrink-0 mt-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-warning"></div>
+                    <div className="w-6 h-6 rounded-full bg-white border border-[#F1F5F9] flex items-center justify-center relative z-10 shrink-0 mt-0.5 shadow-sm">
+                      <div className="w-2 h-2 rounded-full bg-[#F59E0B]"></div>
                     </div>
                     
-                    <div className="flex-1 bg-surface-secondary border border-border rounded p-3 text-xs shadow-sm">
-                      <div className="font-bold text-text-primary mb-1">{act.action === 'click' ? `Clicked in ${act.application || 'Chrome'}` : act.action === 'type' ? `Typed in ${act.application || 'Chrome'}` : `Action in ${act.application || 'Chrome'}`}</div>
-                      <div className="text-text-secondary truncate">{act.metadata?.elementName || act.metadata?.typedText || act.action}</div>
+                    <div className="flex-1 flex items-start gap-3 pt-0.5">
+                      <div className="w-8 h-8 rounded-lg bg-[#F1F5F9] flex items-center justify-center shrink-0">
+                        <Icon className="w-4 h-4 text-text-muted" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm text-text-primary">{act.action === 'click' ? `Clicked in ${act.application || 'Chrome'}` : act.action === 'type' ? `Typed in ${act.application || 'Chrome'}` : `Action in ${act.application || 'Chrome'}`}</div>
+                        <div className="text-xs text-text-muted truncate mt-0.5">{act.metadata?.elementName || act.metadata?.typedText || act.action}</div>
+                      </div>
                     </div>
                   </div>
                 );
               }) : (
                 <div className="flex-1 flex flex-col items-center justify-center h-full pt-12">
-                  <Activity className="w-8 h-8 text-border mb-3" />
-                  <div className="text-xs text-text-muted text-center font-bold">No recent activity</div>
-                  <div className="text-[10px] text-text-muted text-center mt-1">Start observation to record events</div>
+                  <Activity className="w-8 h-8 text-[#E2E8F0] mb-3" />
+                  <div className="text-sm text-text-muted text-center font-medium">No recent activity</div>
+                  <div className="text-xs text-text-muted text-center mt-1">Start observation to record events</div>
                 </div>
               )}
             </div>
@@ -298,61 +296,63 @@ export default function Dashboard() {
         </div>
 
         {/* Column 2: Trace Opportunity */}
-        <div className="solid-card p-6 flex flex-col h-[400px]">
-          <h2 className="text-[10px] font-bold text-text-primary uppercase tracking-widest mb-6 flex items-center gap-2">
+        <div className="solid-card p-6 flex flex-col h-[420px]">
+          <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider mb-6 flex items-center gap-2">
             <TraceLogo className="text-xs text-text-primary" /> Opportunity
           </h2>
           
           {data.topOpportunity ? (
             <div className="flex-1 flex flex-col">
               <h3 className="text-lg font-bold text-text-primary mb-1">{data.topOpportunity.name}</h3>
-              <p className="text-[11px] text-text-secondary italic mb-6">"TRACE noticed a repetitive workflow"</p>
+              <p className="text-xs text-text-muted italic mb-5">"TRACE noticed that..."</p>
               
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-surface-secondary rounded border border-border p-4">
-                  <p className="text-[10px] text-text-muted font-bold uppercase mb-1">Automation Potential</p>
-                  <p className="text-2xl font-black text-success">{data.aiAnalysis?.automationPotential || 85}%</p>
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="bg-[#F8FAFC] rounded-xl p-4">
+                  <p className="text-[10px] text-text-muted font-medium uppercase mb-1">Automation</p>
+                  <p className="text-2xl font-bold text-[#16A34A]">{data.aiAnalysis?.automationPotential || 85}%</p>
                 </div>
-                <div className="bg-surface-secondary rounded border border-border p-4">
-                  <p className="text-[10px] text-text-muted font-bold uppercase mb-1">Repetitions</p>
-                  <p className="text-2xl font-black text-text-primary">{data.topOpportunity.occurrenceCount}</p>
+                <div className="bg-[#F8FAFC] rounded-xl p-4">
+                  <p className="text-[10px] text-text-muted font-medium uppercase mb-1">Repetitions</p>
+                  <p className="text-2xl font-bold text-text-primary">{data.topOpportunity.occurrenceCount}</p>
                 </div>
-                <div className="bg-surface-secondary rounded border border-border p-4">
-                  <p className="text-[10px] text-text-muted font-bold uppercase mb-1">Avg. Time</p>
+                <div className="bg-[#F8FAFC] rounded-xl p-4">
+                  <p className="text-[10px] text-text-muted font-medium uppercase mb-1">Avg. Time</p>
                   <p className="text-xl font-bold text-text-primary">{Math.max(1, Math.round((data.topOpportunity.averageDurationSeconds || 0)/60))} min</p>
                 </div>
-                <div className="bg-surface-secondary rounded border border-border p-4">
-                  <p className="text-[10px] text-text-muted font-bold uppercase mb-1">Potential Saving</p>
-                  <p className="text-xl font-bold text-success">~{Math.max(1, Math.round((data.topOpportunity.averageDurationSeconds || 0)/60))}m/run</p>
+                <div className="bg-[#F8FAFC] rounded-xl p-4">
+                  <p className="text-[10px] text-text-muted font-medium uppercase mb-1">Potential Saving</p>
+                  <p className="text-xl font-bold text-[#16A34A]">~{Math.max(1, Math.round((data.topOpportunity.averageDurationSeconds || 0)/60))}m/run</p>
                 </div>
               </div>
 
-              <div className="mt-auto">
+              <div className="mt-auto space-y-3">
+                <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Recommended Action</p>
+                <p className="text-xs text-text-secondary">Review deterministic insights and consider manual automation.</p>
                 <button 
                   onClick={handleBuildAutomation}
                   disabled={isGenerating}
-                  className="w-full py-3 bg-text-primary text-background text-xs font-bold rounded hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 bg-[#0F172A] text-white text-xs font-semibold rounded-xl hover:bg-[#1E293B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isGenerating ? 'Building...' : 'Build Automation'}
                 </button>
               </div>
             </div>
           ) : (
-             <div className="flex-1 flex flex-col items-center justify-center text-xs text-text-muted">
-                <Bot className="w-8 h-8 text-border mb-3" />
+             <div className="flex-1 flex flex-col items-center justify-center text-sm text-text-muted">
+                <Bot className="w-8 h-8 text-[#E2E8F0] mb-3" />
                 No major opportunities detected yet.
              </div>
           )}
         </div>
 
         {/* Column 3: Time Saved Overview */}
-        <div className="solid-card p-6 flex flex-col h-[400px]">
+        <div className="solid-card p-6 flex flex-col h-[420px]">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-[10px] font-bold text-text-primary uppercase tracking-widest">Time Saved Overview</h2>
+            <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Time Saved Overview</h2>
             <select 
               value={timeFilter}
               onChange={(e) => setTimeFilter(e.target.value)}
-              className="bg-surface text-[10px] font-bold text-text-primary border border-border outline-none cursor-pointer rounded px-2 py-1 focus:border-accent transition-colors"
+              className="bg-white text-xs font-medium text-text-primary border border-[#E2E8F0] outline-none cursor-pointer rounded-lg px-3 py-1.5 focus:border-[#0284C7] transition-colors"
             >
               <option>Today</option>
               <option>This Week</option>
@@ -362,23 +362,29 @@ export default function Dashboard() {
           </div>
           
           <div className="mb-6">
-             <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Total Time Saved</p>
-             <h3 className="text-3xl font-black text-text-primary tracking-tight mb-1">{displayFormattedTime}</h3>
-             <p className={`text-[10px] font-bold ${timeSavedMs >= timeSavedPreviousMs ? 'text-success' : 'text-error'}`}>{getTrend(timeSavedMs, timeSavedPreviousMs)}</p>
+             <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-1">Total Time Saved</p>
+             <h3 className="text-3xl font-bold text-text-primary tracking-tight mb-1">{displayFormattedTime}</h3>
+             <p className={`text-[11px] font-medium ${timeSavedMs >= timeSavedPreviousMs ? 'text-success' : 'text-error'}`}>{getTrend(timeSavedMs, timeSavedPreviousMs)}</p>
           </div>
 
           <div className="flex-1 w-full min-h-[150px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 9, fontWeight: 500}} tickFormatter={(v) => `${Math.round(v)}m`} />
+              <LineChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 10, fontWeight: 500}} tickFormatter={(v) => `${Math.round(v)}m`} />
                 <XAxis dataKey="name" hide />
                 <Tooltip 
-                  cursor={{stroke: 'var(--border)', strokeWidth: 1, strokeDasharray: '4 4'}} 
-                  contentStyle={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold' }}
-                  itemStyle={{ color: 'var(--text-primary)' }}
+                  cursor={{stroke: '#E2E8F0', strokeWidth: 1, strokeDasharray: '4 4'}} 
+                  contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#F1F5F9', borderRadius: '12px', fontSize: '11px', fontWeight: 600, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}
+                  itemStyle={{ color: '#0F172A' }}
                 />
-                <Line type="monotone" dataKey="time" stroke="var(--warning)" strokeWidth={3} dot={{r: 4, fill: 'var(--surface)', strokeWidth: 2}} activeDot={{r: 6, fill: 'var(--warning)', strokeWidth: 0}} />
+                <defs>
+                  <linearGradient id="colorTime" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <Line type="monotone" dataKey="time" stroke="#F59E0B" strokeWidth={2.5} dot={{r: 4, fill: '#FFFFFF', strokeWidth: 2, stroke: '#F59E0B'}} activeDot={{r: 6, fill: '#F59E0B', strokeWidth: 0}} />
               </LineChart>
             </ResponsiveContainer>
           </div>

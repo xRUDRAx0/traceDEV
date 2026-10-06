@@ -92,23 +92,37 @@ export interface AutomationPlan {
   trigger: { type: string };
   steps: AutomationStep[];
   status: 'Draft' | 'Approved';
+  version: number;
+  confidence: number;
+  estimatedManualDuration: number; // in seconds
+  timeSavedPerRun: number; // in seconds
+  successRate: number;
+  executionCount: number;
+  averageDuration: number;
+  applications: string[];
+  variables: string[];
+  intent?: string; // Natural language intent
+  executionType?: 'standard' | 'showcase';
 }
 
 export interface StepResult {
   step: string;
-  status: 'Pending' | 'Running' | 'WaitingForApproval' | 'Completed' | 'Failed';
+  status: 'Pending' | 'Running' | 'WaitingForApproval' | 'Completed' | 'Failed' | 'Recovering' | 'Verifying' | 'Cancelled';
   originalAction?: string;
+  recoveryReason?: string; // Feature 9: Why did TRACE do this?
 }
 
 export interface ExecutionRun {
   runId: string;
   automationId: string;
-  status: 'Running' | 'WaitingForApproval' | 'Completed' | 'Failed';
+  status: 'Running' | 'WaitingForApproval' | 'WaitingForUser' | 'Completed' | 'Failed' | 'Recovering' | 'Verifying' | 'Cancelled';
   currentStepIndex: number;
   stepResults: StepResult[];
   context?: Record<string, any>;
   startedAt: number;
   completedAt?: number;
+  timeSaved?: number; // feature 8, 10
+  executionType?: 'standard' | 'showcase';
 }
 
 // Preload Demo Automation
@@ -118,6 +132,16 @@ const demoSalesAutomation: AutomationPlan = {
   workflowId: 'wf_demo',
   trigger: { type: 'manual' },
   status: 'Approved',
+  version: 3,
+  confidence: 96,
+  estimatedManualDuration: 272, // 4m 32s
+  timeSavedPerRun: 260, // 4m 20s
+  successRate: 98,
+  executionCount: 14,
+  averageDuration: 12,
+  applications: ['Excel', 'Email'],
+  variables: ['current_week'],
+  intent: 'Run my weekly sales report',
   steps: [
     { type: 'receive_weekly_sales_email' },
     { type: 'download_sales_csv' },

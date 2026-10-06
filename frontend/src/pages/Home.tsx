@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlayCircle, LayoutDashboard, Sparkles } from 'lucide-react';
+import { PlayCircle, LayoutDashboard, Sparkles, Zap } from 'lucide-react';
 import TraceLogo from '../components/TraceLogo';
 import { useObservation } from '../context/ObservationContext';
 
@@ -45,34 +45,75 @@ export default function Home() {
               Let's get some work done.
             </h2>
             
-            <p className="text-sm font-medium text-text-secondary leading-relaxed max-w-[380px] mb-12">
+            <p className="text-sm font-medium text-text-secondary leading-relaxed max-w-[380px] mb-8">
               TRACE observes how you work, understands repetitive patterns, and helps turn them into reliable automations.
             </p>
 
-            <div className="flex flex-col gap-4 max-w-[280px]">
+            {/* Feature 4: Natural Language Execution Input */}
+            <div className="w-full max-w-[420px] mb-12 relative group">
+              <input 
+                type="text" 
+                placeholder="What do you want TRACE to do?"
+                className="w-full bg-surface border-2 border-border rounded-xl px-5 py-4 text-sm font-bold text-text-primary focus:outline-none focus:border-accent transition-all shadow-sm"
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter') {
+                    const input = e.currentTarget.value;
+                    if (!input.trim()) return;
+                    e.currentTarget.disabled = true;
+                    try {
+                      // Navigate to a temporary loading screen or Agent view
+                      navigate('/agent-view', { state: { instruction: input } });
+                    } catch (err) {
+                      console.error(err);
+                    }
+                  }
+                }}
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <span className="text-[10px] font-bold text-text-muted bg-surface-secondary px-2 py-1 rounded border border-border">↵ Enter</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 max-w-[420px] mb-8">
               <button 
                 onClick={handleStartObserving}
-                className="w-full py-4 bg-[#232529] hover:bg-[#1a1c1f] text-white rounded-xl shadow-md transition-all hover:shadow-lg flex items-center justify-center gap-3 font-bold text-sm border border-transparent hover:border-text-muted"
+                className="flex-1 py-3.5 bg-[#0F172A] hover:bg-[#1E293B] text-white rounded-xl shadow-[0_4px_14px_0_rgba(15,23,42,0.2)] transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 font-semibold text-sm"
               >
                 <PlayCircle className="w-4 h-4" /> Start Observing
               </button>
               
               <button 
                 onClick={() => navigate('/dashboard')}
-                className="w-full py-4 bg-surface hover:bg-surface-secondary text-text-primary rounded-xl shadow-sm transition-all hover:shadow flex items-center justify-center gap-3 font-bold text-sm border border-border"
+                className="flex-1 py-3.5 bg-white hover:bg-surface-secondary text-text-primary rounded-xl shadow-[0_4px_14px_0_rgba(0,0,0,0.02)] transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 font-semibold text-sm border border-border"
               >
                 <LayoutDashboard className="w-4 h-4 text-text-muted" /> Go to Dashboard
               </button>
+            </div>
+
+            <div className="max-w-[420px]">
+              <div className="relative group">
+                <button 
+                  onClick={() => navigate('/showcase')}
+                  className="relative w-full py-3 bg-[#F0F9FF] text-[#0284C7] rounded-xl flex items-center justify-center gap-3 font-bold text-xs tracking-wide uppercase border border-[#BAE6FD] hover:bg-[#E0F2FE] transition-colors"
+                >
+                  <Zap className="w-4 h-4 fill-current" /> Run Automation Showcase
+                </button>
+              </div>
+              <p className="text-center text-[10px] text-text-muted font-bold tracking-widest uppercase mt-3">Live Developer Demo</p>
             </div>
           </div>
 
           {/* Right Content - Large Logo Card */}
           <div className="flex justify-center md:justify-end relative">
-             <div className="w-full max-w-[420px] aspect-square rounded-[32px] bg-white border border-border shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] flex items-center justify-center relative z-10">
-               <TraceLogo className="text-[96px] text-[#2c3238]" />
+             <div className="w-full max-w-[400px] aspect-square rounded-[32px] bg-white border border-border shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] flex flex-col items-center justify-center relative z-10">
+               <TraceLogo className="text-[100px] text-[#0F172A]" />
+               <p className="mt-2 text-[#64748B] text-lg font-medium">Your Work, Automated</p>
              </div>
-             {/* Glow behind the card to match reference */}
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-warning/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+             
+             {/* Massive soft organic blobs behind the card matching the reference */}
+             <div className="absolute top-[-10%] right-[-10%] w-[350px] h-[350px] bg-[#FEF08A]/40 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
+             <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-[#E0F2FE]/60 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
+             <div className="absolute top-[20%] left-[-20%] w-[250px] h-[250px] bg-[#F3E8FF]/50 rounded-full blur-[60px] -z-10 pointer-events-none"></div>
           </div>
         </div>
       </div>
