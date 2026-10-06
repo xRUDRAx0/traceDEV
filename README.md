@@ -43,6 +43,17 @@ TRACE observes everyday desktop tasks, detects repetitive patterns and friction 
 
 ---
 
+## ⚡ TRACE Showcase Architecture
+
+The project includes a robust **TRACE Showcase** layer demonstrating local, non-web automations (Excel, PDF extraction, File Recovery) without external dependencies.
+
+- **Execution Router (`execution.service.ts`)**: Routes specialized actions (`OPEN_EXCEL`, `FIND_FILE`, `READ_PDF`) to dedicated local executors while maintaining the standard Playwright loop for web actions.
+- **Python COM Executor (`excel_executor.py`)**: Uses `win32com.client` to physically open and interact with Microsoft Excel on the host machine, performing visible macro-style interactions.
+- **Demo Workspace Generator (`showcase.service.ts`)**: Automatically scaffolds an isolated `TRACE Demo Workspace` at the root directory upon server start, pre-filling it with sample data (Excel files, PDFs, Support Tickets) to ensure demo executions never corrupt real user data.
+- **Self-Healing Fallbacks**: Demonstrates AI self-healing by allowing a target PDF (`Invoice_1042.pdf`) to be arbitrarily moved within the workspace, triggering a dynamic recursive file search and recovery step during execution.
+
+---
+
 ## 📋 Prerequisites
 
 - **Node.js**: v18.0.0 or higher (v20+ recommended)
